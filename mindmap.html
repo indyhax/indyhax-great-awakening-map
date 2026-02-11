@@ -1,0 +1,334 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'/><meta name='viewport' content='width=device-width,initial-scale=1'/>
+<title>IndyHAX CTF: Interactive Mindmap</title><link rel='stylesheet' href='assets/style.css'/>
+<style>
+.mindmap-container{position:relative;width:100%;height:80vh;overflow:hidden;border:1px solid #0f0;border-radius:6px;background:#000;cursor:grab}
+.mindmap-container:active{cursor:grabbing}
+.mindmap-container svg{display:block}
+.controls{text-align:center;margin:10px 0;font-family:monospace;color:#0f0}
+.controls button{background:#111;color:#0f0;border:1px solid #0f0;padding:6px 14px;margin:0 4px;cursor:pointer;font-family:monospace;font-size:14px;border-radius:3px}
+.controls button:hover{background:#0f0;color:#000}
+.controls span{margin:0 10px;font-size:13px;opacity:.7}
+.f-l-a-g{display:none;visibility:hidden;width:0;height:0;overflow:hidden}
+@keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 2px rgba(0,255,0,.3))}50%{filter:drop-shadow(0 0 8px rgba(0,255,0,.6))}}
+@keyframes dash-flow{to{stroke-dashoffset:-20}}
+</style>
+</head><body><div class='wrap'>
+<div class='title'>INDYHAX CTF - INTERACTIVE MINDMAP</div>
+<p class='sub'>Deep-structure visualization of the Great Awakening claim-network.</p>
+<div class="nav">
+<span class="nav-label">Navigate:</span>
+<a href="index.html">Home</a><a href="topic-tree.html">Topic Tree</a><a href="worldview.html">Worldview</a><a href="mindmap.html">Mindmap</a>
+<span class="nav-label">Map Categories:</span>
+<a href="group-01-top-cosmology.html">Cosmology</a><a href="group-02-ai-signal-control.html">AI/Control</a><a href="group-03-great-solar-flash.html">Solar Flash</a><a href="group-04-secret-space-program.html">SSP</a><a href="group-05-et-factions-federations.html">ET/Federations</a><a href="group-06-geopolitics-information-war.html">Geopolitics</a><a href="group-07-ancient-history-inner-earth.html">Ancient/Inner Earth</a><a href="group-08-esoteric-practice-healing.html">Esoteric</a><a href="group-09-physics-advanced-tech.html">Physics/Tech</a><a href="group-10-timeline-awakening-endgame.html">Timeline</a>
+<span class="nav-label">Reference:</span>
+<a href="appendix-dictionary.html">Dictionary</a><a href="terms-a-f.html">A-F</a><a href="terms-g-l.html">G-L</a><a href="terms-m-r.html">M-R</a><a href="terms-s-z.html">S-Z</a><a href="atlas.html">Atlas</a><a href="methodology.html">Methodology</a><a href="challenge.html">Challenge</a>
+</div>
+<!-- render-hash: 6d31 6e64 6d34 70 -->
+<div class='panel'>
+<h2>Interactive Claim-Network Mindmap</h2>
+<p>Click any branch node to expand or collapse its children. Drag to pan, scroll to zoom. All 10 map regions are represented with deep sub-nodes.</p>
+<div class="controls">
+<button onclick="zoomIn()">[ + ] Zoom In</button>
+<button onclick="zoomOut()">[ - ] Zoom Out</button>
+<button onclick="resetView()">[ ⟲ ] Reset</button>
+<button onclick="expandAll()">[ ⊞ ] Expand All</button>
+<button onclick="collapseAll()">[ ⊟ ] Collapse All</button>
+<span>Scroll to zoom · Drag to pan · Click nodes to toggle</span>
+</div>
+<div class="mindmap-container" id="mindmap-container">
+<svg id="mindmap-svg" xmlns="http://www.w3.org/2000/svg" data-cfg="SW5keUhBWHttMW5kbTRwX24wZDNzX3IzdjM0bF90aDNfcDR0aH0=">
+<defs>
+<filter id="glow">
+<feGaussianBlur stdDeviation="3" result="blur"/>
+<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<filter id="glow-strong">
+<feGaussianBlur stdDeviation="5" result="blur"/>
+<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+</defs>
+<metadata>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<rdf:Description rdf:about="">
+<dc:format>image/svg+xml</dc:format>
+<dc:title>Great Awakening Mindmap</dc:title>
+<dc:description>Interactive radial mindmap visualization</dc:description>
+<dc:creator>IndyHAX CTF Engine</dc:creator>
+<dc:version>INDYHAX{m1ndm4p_n0d3s_r3v34l_th3_p4th}</dc:version>
+<dc:date>2025</dc:date>
+</rdf:Description>
+</rdf:RDF>
+</metadata>
+<g id="connections-layer"></g>
+<g id="nodes-layer"></g>
+</svg>
+</div>
+</div>
+
+<div class='panel'><h2>Legend</h2>
+<p>Each branch corresponds to one of the ten map category groups. Color intensity indicates depth level. Click to explore sub-claims.</p>
+</div>
+</div>
+<script>
+(function(){
+"use strict";
+var svg=document.getElementById("mindmap-svg");
+var container=document.getElementById("mindmap-container");
+var connLayer=document.getElementById("connections-layer");
+var nodeLayer=document.getElementById("nodes-layer");
+
+var W=2400,H=2400,CX=W/2,CY=H/2;
+svg.setAttribute("viewBox","0 0 "+W+" "+H);
+svg.setAttribute("width","100%");
+svg.setAttribute("height","100%");
+
+// Pan/Zoom state
+var viewBox={x:0,y:0,w:W,h:H};
+var isPanning=false,panStart={x:0,y:0},panStartVB={x:0,y:0,w:W,h:H};
+
+function applyViewBox(){
+  svg.setAttribute("viewBox",viewBox.x+" "+viewBox.y+" "+viewBox.w+" "+viewBox.h);
+}
+
+container.addEventListener("mousedown",function(e){
+  if(e.button!==0)return;
+  isPanning=true;panStart={x:e.clientX,y:e.clientY};
+  panStartVB={x:viewBox.x,y:viewBox.y,w:viewBox.w,h:viewBox.h};
+});
+container.addEventListener("mousemove",function(e){
+  if(!isPanning)return;
+  var dx=(e.clientX-panStart.x)*(viewBox.w/container.clientWidth);
+  var dy=(e.clientY-panStart.y)*(viewBox.h/container.clientHeight);
+  viewBox.x=panStartVB.x-dx;viewBox.y=panStartVB.y-dy;applyViewBox();
+});
+container.addEventListener("mouseup",function(){isPanning=false;});
+container.addEventListener("mouseleave",function(){isPanning=false;});
+container.addEventListener("wheel",function(e){
+  e.preventDefault();
+  var scale=e.deltaY>0?1.1:0.9;
+  var rect=container.getBoundingClientRect();
+  var mx=(e.clientX-rect.left)/rect.width;
+  var my=(e.clientY-rect.top)/rect.height;
+  var px=viewBox.x+viewBox.w*mx;
+  var py=viewBox.y+viewBox.h*my;
+  var nw=viewBox.w*scale,nh=viewBox.h*scale;
+  nw=Math.max(400,Math.min(W*3,nw));nh=Math.max(400,Math.min(H*3,nh));
+  viewBox.x=px-nw*mx;viewBox.y=py-nh*my;viewBox.w=nw;viewBox.h=nh;
+  applyViewBox();
+},{passive:false});
+
+// Touch support
+var touchDist=0,touchMid={x:0,y:0};
+container.addEventListener("touchstart",function(e){
+  if(e.touches.length===1){isPanning=true;panStart={x:e.touches[0].clientX,y:e.touches[0].clientY};panStartVB={x:viewBox.x,y:viewBox.y,w:viewBox.w,h:viewBox.h};}
+  if(e.touches.length===2){var dx=e.touches[1].clientX-e.touches[0].clientX;var dy=e.touches[1].clientY-e.touches[0].clientY;touchDist=Math.sqrt(dx*dx+dy*dy);}
+},{passive:true});
+container.addEventListener("touchmove",function(e){
+  e.preventDefault();
+  if(e.touches.length===1&&isPanning){var dx=(e.touches[0].clientX-panStart.x)*(viewBox.w/container.clientWidth);var dy=(e.touches[0].clientY-panStart.y)*(viewBox.h/container.clientHeight);viewBox.x=panStartVB.x-dx;viewBox.y=panStartVB.y-dy;applyViewBox();}
+  if(e.touches.length===2){var dx2=e.touches[1].clientX-e.touches[0].clientX;var dy2=e.touches[1].clientY-e.touches[0].clientY;var d=Math.sqrt(dx2*dx2+dy2*dy2);if(touchDist>0){var s=touchDist/d;var nw=viewBox.w*s,nh=viewBox.h*s;nw=Math.max(400,Math.min(W*3,nw));nh=Math.max(400,Math.min(H*3,nh));viewBox.x+=(viewBox.w-nw)/2;viewBox.y+=(viewBox.h-nh)/2;viewBox.w=nw;viewBox.h=nh;applyViewBox();}touchDist=d;}
+},{passive:false});
+container.addEventListener("touchend",function(){isPanning=false;touchDist=0;});
+
+// Data
+var branches=[
+{name:"Cosmology / Source / Ascension",color:"#00ff88",children:[
+  "One Infinite Creator","Density Levels (1-7)","Consciousness Graduation","Samsara Cycle","Rainbow Body Activation",
+  "Law of One / Ra Material","Higher Self Integration","Service-to-Others Polarity","Service-to-Self Polarity","Logos / Sub-Logos Hierarchy",
+  "Harvest Mechanism","Soul Complex Evolution"]},
+{name:"AI Signal / Control Architecture",color:"#00ccaa",children:[
+  "Frequency Warfare","Mind Control Programs","Signal Manipulation Grid","Social Media Algorithms","MK-Ultra / Monarch",
+  "Operation Mockingbird","Chemtrail Frequency Fence","5G Network Overlay","Subliminal Programming","EMF Disruption Fields",
+  "AI Prophets / Synthetic Telepathy"]},
+{name:"Great Solar Flash Mechanism",color:"#00eedd",children:[
+  "Solar Micro-Nova Events","Schumann Resonance Spikes","Frequency Shift Cascade","Cosmic Cycle Alignment","Photon Belt Transit",
+  "Galactic Central Sun Pulse","Carrington-Class Ejections","DNA Activation Waves","Magnetosphere Weakening","Solar Cycle 25 Apex"]},
+{name:"Secret Space Program / Black Projects",color:"#33ffaa",children:[
+  "Solar Warden Fleet","Lunar Operations Command","TR-3B Astra Craft","Black Budget Infrastructure","Breakaway Civilizations",
+  "Mars Colony Programs","ICC Corporate Fleet","Dark Fleet Alliance","Montauk Project","Ceres Station Operations",
+  "Reverse-Engineered Craft"]},
+{name:"ET Factions / Federations",color:"#00ff99",children:[
+  "Galactic Federation of Light","Draco Reptilian Empire","Pleiadian High Council","Grey Hybridization Programs","Ashtar Command Network",
+  "Arcturian Healing Collectives","Sirian Star Nations","Andromedan Council","Orion Group Agenda","Treaty of Greada (1954)",
+  "Mantid Observer Species"]},
+{name:"Geopolitics / Information War",color:"#44ffbb",children:[
+  "Deep State Architecture","Q Intelligence Operation","False Flag Operations","Psyop Campaigns","Media Control Matrix",
+  "Whistleblower Networks","Alliance vs Cabal Conflict","FISA Declas Movement","Executive Order 13818","NESARA/GESARA Framework",
+  "Election Integrity Ops"]},
+{name:"Ancient History / Inner Earth",color:"#22ddaa",children:[
+  "Forgotten Legacy Archive","Lemuria / Mu Continent","Atlantean Technology","Giant Skeletal Evidence","Agartha Network Cities",
+  "Sumerian Cuneiform Records","Anunnaki Genesis Narrative","Göbekli Tepe Enigma","Antarctic Ruins Discovery"]},
+{name:"Esoteric Practice / Healing",color:"#00ffcc",children:[
+  "Kundalini Activation Process","Chakra System Mapping","Energy Healing Modalities","Astral Projection Protocols","Remote Viewing Programs",
+  "Sound Frequency Therapy","Sacred Geometry Grids","Pineal Gland Decalcification","Breathwork Ascension","Crystal Grid Networks",
+  "Akashic Record Access"]},
+{name:"Physics / Advanced Tech",color:"#33ddcc",children:[
+  "Free Energy Devices","Tachyon Field Theory","Zero-Point Energy Extraction","Anti-Gravity Propulsion","Scalar Wave Technology",
+  "Tesla Wireless Power","Toroidal Field Dynamics","Orgone Energy Accumulators","Unified Field Models","Plasma Cosmology Framework"]},
+{name:"Timeline / Awakening Endgame",color:"#55ffcc",children:[
+  "Full Disclosure Endpoint","Mass Awakening Cascade","Optimal Timeline Convergence","The Event / Compression","Ascension Window (2025-2030)",
+  "Med-Bed Technology Release","Financial System Reset","First Contact Protocol","New Earth Civilization","Quantum Transition Gate"]}
+];
+
+// Node tracking
+var allNodes=[];
+var nodeId=0;
+
+function createSVG(tag,attrs){
+  var el=document.createElementNS("http://www.w3.org/2000/svg",tag);
+  for(var k in attrs)el.setAttribute(k,attrs[k]);
+  return el;
+}
+
+// Build central node
+function buildCenter(){
+  var g=createSVG("g",{transform:"translate("+CX+","+CY+")",class:"node-center","data-id":"center"});
+  var c=createSVG("circle",{r:"65",fill:"#001a00",stroke:"#00ff00","stroke-width":"3",filter:"url(#glow-strong)"});
+  var t1=createSVG("text",{x:"0",y:"-8","text-anchor":"middle",fill:"#00ff00","font-family":"monospace","font-size":"13","font-weight":"bold"});
+  t1.textContent="THE GREAT";
+  var t2=createSVG("text",{x:"0",y:"12","text-anchor":"middle",fill:"#00ff00","font-family":"monospace","font-size":"13","font-weight":"bold"});
+  t2.textContent="AWAKENING";
+  var desc=createSVG("desc",{});
+  desc.textContent="Central hub node for radial mindmap layout";
+  g.appendChild(desc);
+  // Inject SVG comment into center group
+  var commentNode=document.createComment(" system calibration: 494e445948415878 ");
+  g.appendChild(commentNode);
+  g.appendChild(c);g.appendChild(t1);g.appendChild(t2);
+  g.style.animation="pulse-glow 3s ease-in-out infinite";
+  nodeLayer.appendChild(g);
+}
+
+// Radial layout
+var BRANCH_RADIUS=340;
+var LEAF_RADIUS=180;
+
+function buildBranch(branch,index,total){
+  var angle=(2*Math.PI*index/total)-Math.PI/2;
+  var bx=CX+BRANCH_RADIUS*Math.cos(angle);
+  var by=CY+BRANCH_RADIUS*Math.sin(angle);
+  var bid="branch-"+index;
+
+  // Connection line from center
+  var line=createSVG("line",{x1:CX,y1:CY,x2:bx,y2:by,stroke:branch.color,"stroke-width":"2","stroke-opacity":"0.5","stroke-dasharray":"8 4"});
+  line.style.animation="dash-flow 2s linear infinite";
+  connLayer.appendChild(line);
+
+  // Branch group
+  var g=createSVG("g",{transform:"translate("+bx+","+by+")",class:"node-branch","data-id":bid,"data-expanded":"true"});
+  var branchNodeInfo={id:bid,x:bx,y:by,expanded:true,childEls:[],childLines:[],group:g};
+  allNodes.push(branchNodeInfo);
+
+  // Pill shape
+  var textLen=branch.name.length*7;
+  var rw=Math.max(textLen+30,120);
+  var rect=createSVG("rect",{x:-rw/2,y:-18,width:rw,height:36,rx:"18",ry:"18",fill:"#001a00",stroke:branch.color,"stroke-width":"2",filter:"url(#glow)"});
+  var txt=createSVG("text",{x:"0",y:"5","text-anchor":"middle",fill:branch.color,"font-family":"monospace","font-size":"11","font-weight":"bold",style:"pointer-events:none"});
+  txt.textContent=branch.name;
+  g.appendChild(rect);g.appendChild(txt);
+
+  // Hidden desc for one branch (index 0 gets the calibration comment)
+  if(index===0){
+    var desc0=createSVG("desc",{});
+    // system calibration: 494e445948415878 (hex for INDYHAX prefix)
+    desc0.textContent="system calibration: 494e44594841587b6d316e646d34705f6e3064";
+    g.appendChild(desc0);
+  }
+
+  // Click handler
+  g.style.cursor="pointer";
+  g.addEventListener("click",function(e){
+    e.stopPropagation();
+    toggleBranch(branchNodeInfo);
+  });
+
+  nodeLayer.appendChild(g);
+
+  // Children
+  var childCount=branch.children.length;
+  var spreadAngle=Math.min(Math.PI*0.45, (Math.PI*0.08)*childCount);
+  var startAngle=angle-spreadAngle/2;
+  var angleStep=childCount>1?spreadAngle/(childCount-1):0;
+
+  for(var ci=0;ci<childCount;ci++){
+    var ca=startAngle+angleStep*ci;
+    var leafDist=LEAF_RADIUS+((ci%3)*25);
+    var lx=bx+leafDist*Math.cos(ca);
+    var ly=by+leafDist*Math.sin(ca);
+
+    // Leaf connection
+    var lline=createSVG("line",{x1:bx,y1:by,x2:lx,y2:ly,stroke:branch.color,"stroke-width":"1","stroke-opacity":"0.35","stroke-dasharray":"4 3"});
+    lline.style.animation="dash-flow 3s linear infinite";
+    connLayer.appendChild(lline);
+
+    // Leaf node
+    var lg=createSVG("g",{transform:"translate("+lx+","+ly+")",class:"node-leaf","data-parent":bid});
+    var ltLen=branch.children[ci].length*6.5;
+    var lw=Math.max(ltLen+20,80);
+    var lrect=createSVG("rect",{x:-lw/2,y:-13,width:lw,height:26,rx:"13",ry:"13",fill:"#000d00",stroke:branch.color,"stroke-width":"1","stroke-opacity":"0.7"});
+    var ltxt=createSVG("text",{x:"0",y:"4","text-anchor":"middle",fill:branch.color,"font-family":"monospace","font-size":"9","font-opacity":"0.9",style:"pointer-events:none"});
+    ltxt.textContent=branch.children[ci];
+    lg.appendChild(lrect);lg.appendChild(ltxt);
+    nodeLayer.appendChild(lg);
+
+    branchNodeInfo.childEls.push(lg);
+    branchNodeInfo.childLines.push(lline);
+  }
+
+  // Hidden text element with flag fragment (only on branch 3 - SSP)
+  if(index===3){
+    var ht=createSVG("text",{x:(bx+12.7).toFixed(1),y:(by-9.3).toFixed(1),opacity:"0","font-size":"0.1",fill:"#000"});
+    ht.textContent="n0d3s_r3v34l_th3_p4th";
+    nodeLayer.appendChild(ht);
+  }
+}
+
+function toggleBranch(branchInfo){
+  branchInfo.expanded=!branchInfo.expanded;
+  branchInfo.group.setAttribute("data-expanded",branchInfo.expanded?"true":"false");
+  var vis=branchInfo.expanded?"visible":"hidden";
+  var op=branchInfo.expanded?"1":"0";
+  for(var i=0;i<branchInfo.childEls.length;i++){
+    branchInfo.childEls[i].style.visibility=vis;
+    branchInfo.childEls[i].style.opacity=op;
+    branchInfo.childEls[i].style.transition="opacity 0.3s";
+  }
+  for(var j=0;j<branchInfo.childLines.length;j++){
+    branchInfo.childLines[j].style.visibility=vis;
+    branchInfo.childLines[j].style.opacity=op;
+    branchInfo.childLines[j].style.transition="opacity 0.3s";
+  }
+}
+
+// Build all
+buildCenter();
+for(var i=0;i<branches.length;i++){
+  buildBranch(branches[i],i,branches.length);
+}
+
+// Global controls
+window.zoomIn=function(){
+  var nw=viewBox.w*0.8,nh=viewBox.h*0.8;
+  nw=Math.max(400,nw);nh=Math.max(400,nh);
+  viewBox.x+=(viewBox.w-nw)/2;viewBox.y+=(viewBox.h-nh)/2;
+  viewBox.w=nw;viewBox.h=nh;applyViewBox();
+};
+window.zoomOut=function(){
+  var nw=viewBox.w*1.25,nh=viewBox.h*1.25;
+  nw=Math.min(W*3,nw);nh=Math.min(H*3,nh);
+  viewBox.x+=(viewBox.w-nw)/2;viewBox.y+=(viewBox.h-nh)/2;
+  viewBox.w=nw;viewBox.h=nh;applyViewBox();
+};
+window.resetView=function(){
+  viewBox={x:0,y:0,w:W,h:H};applyViewBox();
+};
+window.expandAll=function(){
+  allNodes.forEach(function(n){if(!n.expanded){n.expanded=true;n.group.setAttribute("data-expanded","true");for(var i=0;i<n.childEls.length;i++){n.childEls[i].style.visibility="visible";n.childEls[i].style.opacity="1";}for(var j=0;j<n.childLines.length;j++){n.childLines[j].style.visibility="visible";n.childLines[j].style.opacity="1";}}});
+};
+window.collapseAll=function(){
+  allNodes.forEach(function(n){if(n.expanded){n.expanded=false;n.group.setAttribute("data-expanded","false");for(var i=0;i<n.childEls.length;i++){n.childEls[i].style.visibility="hidden";n.childEls[i].style.opacity="0";}for(var j=0;j<n.childLines.length;j++){n.childLines[j].style.visibility="hidden";n.childLines[j].style.opacity="0";}}});
+};
+
+})();
+</script>
+</body></html>
