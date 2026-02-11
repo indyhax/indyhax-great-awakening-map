@@ -51,3 +51,8 @@ All term paragraph text remains unchanged; only organization is remapped to map-
 The mindmap page contains a hidden flag dispersed across multiple hiding spots (SVG metadata, base64 data attributes, hex-encoded comments, invisible text elements, and more).
 
 **Flag:** `INDYHAX{m1ndm4p_n0d3s_r3v34l_th3_p4th}`
+
+
+## Flag Discovery Guide
+
+See [GUIDE.md](GUIDE.md) for a step-by-step walkthrough on how to discover both flags.
