@@ -9,6 +9,11 @@ Includes thematic pages plus four alphabetical term catalogs with hundreds of ph
 - terms-s-z.html
 
 
+## Interactive Mindmap
+
+- **mindmap.html** — Deep-structure interactive radial mindmap covering all 10 topic groups with 100+ expandable nodes, pan/zoom, and retro terminal aesthetics. Contains a hidden CTF flag.
+
+
 ## Topic-organized detailed pages (replacing A-Z reading)
 - map-groupings.html (hub)
 - topic-01-cosmology.html
@@ -39,3 +44,10 @@ Includes thematic pages plus four alphabetical term catalogs with hundreds of ph
 - appendix-dictionary.html
 
 All term paragraph text remains unchanged; only organization is remapped to map-like groupings.
+
+
+## CTF Flag (Mindmap)
+
+The mindmap page contains a hidden flag dispersed across multiple hiding spots (SVG metadata, base64 data attributes, hex-encoded comments, invisible text elements, and more).
+
+**Flag:** `INDYHAX{m1ndm4p_n0d3s_r3v34l_th3_p4th}`
