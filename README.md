@@ -21,3 +21,21 @@ Includes thematic pages plus four alphabetical term catalogs with hundreds of ph
 - topic-08-physics-tech.html
 - topic-09-disclosure-endgame.html
 - topic-10-misc-bridges.html
+
+
+## Map-grouped structure (content preserved)
+- topic-tree.html
+- map-groupings.html
+- group-01-top-cosmology.html
+- group-02-ai-signal-control.html
+- group-03-great-solar-flash.html
+- group-04-secret-space-program.html
+- group-05-et-factions-federations.html
+- group-06-geopolitics-information-war.html
+- group-07-ancient-history-inner-earth.html
+- group-08-esoteric-practice-healing.html
+- group-09-physics-advanced-tech.html
+- group-10-timeline-awakening-endgame.html
+- appendix-dictionary.html
+
+All term paragraph text remains unchanged; only organization is remapped to map-like groupings.
