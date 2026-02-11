@@ -36,7 +36,7 @@
 <span>Scroll to zoom · Drag to pan · Click nodes to toggle</span>
 </div>
 <div class="mindmap-container" id="mindmap-container">
-<svg id="mindmap-svg" xmlns="http://www.w3.org/2000/svg" data-cfg="SW5keUhBWHttMW5kbTRwX24wZDNzX3IzdjM0bF90aDNfcDR0aH0=">
+<svg id="mindmap-svg" xmlns="http://www.w3.org/2000/svg" data-cfg="SU5EWUhBWHttMW5kbTRwX24wZDNzX3IzdjM0bF90aDNfcDR0aH0=">
 <defs>
 <filter id="glow">
 <feGaussianBlur stdDeviation="3" result="blur"/>
@@ -192,7 +192,7 @@ function buildCenter(){
   desc.textContent="Central hub node for radial mindmap layout";
   g.appendChild(desc);
   // Inject SVG comment into center group
-  var commentNode=document.createComment(" system calibration: 494e445948415878 ");
+  var commentNode=document.createComment(" system calibration: 494e44594841587b ");
   g.appendChild(commentNode);
   g.appendChild(c);g.appendChild(t1);g.appendChild(t2);
   g.style.animation="pulse-glow 3s ease-in-out infinite";
@@ -230,7 +230,7 @@ function buildBranch(branch,index,total){
   // Hidden desc for one branch (index 0 gets the calibration comment)
   if(index===0){
     var desc0=createSVG("desc",{});
-    // system calibration: 494e445948415878 (hex for INDYHAX prefix)
+    // system calibration: 494e44594841587b (hex for INDYHAX{ prefix)
     desc0.textContent="system calibration: 494e44594841587b6d316e646d34705f6e3064";
     g.appendChild(desc0);
   }
